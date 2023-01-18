@@ -5,6 +5,7 @@ import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 function login() {
     return (
         <Container>
+
             <Head>
                 <title>
                     Login
@@ -15,7 +16,7 @@ function login() {
                 <Logo />
                 <Button variant='outlined'>Sign in with Google</Button>
             </LoginContainer>
-
+            
         </Container>
     )
 }
