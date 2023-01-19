@@ -1,3 +1,4 @@
+import Chat from '../components/Chat';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import ChatIcon from '@mui/icons-material/Chat';
@@ -7,23 +8,33 @@ import { IconButton, Button } from '@mui/material';
 import * as EmailValidator from 'email-validator';
 import { auth, db } from '../firebase'
 import { useAuthState } from 'react-firebase-hooks/auth'
+import { useCollection } from 'react-firebase-hooks/firestore';
+import { collection, addDoc, where, query } from 'firebase/firestore'
 
 function Sidebar() {
 
 const [user] = useAuthState(auth);
+const usersRef = collection(db, 'users');
+const userChatRef = query(usersRef, where('users', 'array-contains', user.email));
+const [chatsSnapShot] = useCollection(userChatRef);
 
 const createChat = () => {
 	const input = prompt('Please enter an email address for the user you would like to contact');
 
 	if (!input) return null;
 
-	if(EmailValidator.validate(input)){
+	if(EmailValidator.validate(input) && !chatAlreadyExists(input) && input !== user.email){
 		// We need to add the cat into the DB collection
-		db.collection('chats').add({
-			users: [user.email, input],
-		})
+		const docRef = addDoc(collection(db, "chats"),
+		{users: [user.email, input],}
+		);
+		console.log("Document written with ID: ", docRef.id)
 	}
 };
+
+const chatAlreadyExists = (recipientEmail) => 
+	!!chatsSnapShot?.docs.find(chat => chat.data().users.find(user => user === recipientEmail)?.length > 0);
+	console.log(chatAlreadyExists)
 
   return (
     <Container>
@@ -48,6 +59,10 @@ const createChat = () => {
 			<SidebarButton onClick={createChat}>
 				Start A New Chat
 			</SidebarButton>
+
+			{chatsSnapShot?.docs.map(chat => {
+				<Chat key={chat.id} id={chat.id} user={chat.data().users}/>
+			})}
     </Container>
   )
 }
