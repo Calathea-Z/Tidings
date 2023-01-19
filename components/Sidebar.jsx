@@ -2,12 +2,15 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import ChatIcon from '@mui/icons-material/Chat';
 import SearchIcon from '@mui/icons-material/Search';
-import SmartButtonIcon from '@mui/icons-material/SmartButton';
 import styled from "styled-components";
 import { IconButton, Button } from '@mui/material';
 import * as EmailValidator from 'email-validator';
+import { auth, db } from '../firebase'
+import { useAuthState } from 'react-firebase-hooks/auth'
 
 function Sidebar() {
+
+const [user] = useAuthState(auth);
 
 const createChat = () => {
 	const input = prompt('Please enter an email address for the user you would like to contact');
@@ -16,15 +19,16 @@ const createChat = () => {
 
 	if(EmailValidator.validate(input)){
 		// We need to add the cat into the DB collection
+		db.collection('chats').add({
+			users: [user.email, input],
+		})
 	}
-
-
-}
+};
 
   return (
     <Container>
       <Header>
-        <UserAvatar />
+        <UserAvatar onClick={() => auth.signOut()} />
 
       	<IconsContainer>
         	<IconButton>
