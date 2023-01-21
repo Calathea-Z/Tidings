@@ -4,7 +4,8 @@ import { auth, db } from '../firebase'
 import Login from './login';
 import Loading from '../components/Loading'
 import { useEffect } from 'react';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
+import { collection, addDoc, serverTimestamp, doc, setDoc} from 'firebase/firestore'
+import { ArrowForwardIosOutlined } from '@mui/icons-material';
 
 export default function App({ Component, pageProps }) {
   const [user, loading] = useAuthState(auth);
@@ -12,14 +13,16 @@ export default function App({ Component, pageProps }) {
 
   useEffect(()=> {
     if(user){
-      const docRef = addDoc(collection(db, "users"),
+       setDoc(doc(db, "users", user.uid),
       {
         email: user.email,
         lastSeen: serverTimestamp(),
         photoURL: user.photoURL,
       },
-        {merge: true},);
-        console.log("Document written with ID: ", docRef.id)
+      {
+        merge: true
+      },);
+      console.log("Document written")
     }
   },[user]);
 
