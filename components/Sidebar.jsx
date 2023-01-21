@@ -9,13 +9,14 @@ import * as EmailValidator from 'email-validator';
 import { auth, db } from '../firebase'
 import { useAuthState } from 'react-firebase-hooks/auth'
 import { useCollection } from 'react-firebase-hooks/firestore';
-import { collection, addDoc, where, query } from 'firebase/firestore'
+import { collection, addDoc, where, query, getDocs } from 'firebase/firestore'
 
 function Sidebar() {
 
 const [user] = useAuthState(auth);
 const usersRef = collection(db, 'users');
 const userChatRef = query(usersRef, where('users', 'array-contains', user.email));
+console.log("HIT", userChatRef)
 const [chatsSnapShot] = useCollection(userChatRef);
 
 const createChat = () => {
@@ -25,12 +26,17 @@ const createChat = () => {
 
 	if(EmailValidator.validate(input) && !chatAlreadyExists(input) && input !== user.email){
 		// We need to add the cat into the DB collection
-		const docRef = addDoc(collection(db, "chats"),
+		addDoc(collection(db, "chats"),
 		{users: [user.email, input],}
 		);
-		console.log("Document written with ID: ", docRef.id)
+		// console.log("Document written with ID: ", docRef.id)
 	}
 };
+
+// const querySnapshot = getDocs(userChatRef);
+// querySnapshot.forEach((doc) => {
+// 	console.log(doc.id, " => ", doc.data());
+// });
 
 const chatAlreadyExists = (recipientEmail) => 
 	!!chatsSnapShot?.docs.find(chat => chat.data().users.find(user => user === recipientEmail)?.length > 0);
